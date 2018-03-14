@@ -1,0 +1,464 @@
+<?php
+
+namespace App\Http\Controllers\Ajax\DAS;
+
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\tblSegment;
+use App\Models\tblSectiondataMH;
+use App\Models\tblOrganization;
+use App\Models\mstRepairMethod;
+use App\Models\tblRCategory;
+use DB, App;
+class SummaryMRController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request)
+    {   
+        $branch_id = $request->branch_id;
+        $sb_id = $request->sb_id;
+        $rmb_id = $request->rmb_id;
+        $segment_id = [];
+        $data = [];
+        $segment = tblSegment::select('id');
+        if ($sb_id == -1  && $branch_id == -1) 
+        {
+            $sb_id = tblOrganization::where('parent_id', $rmb_id)->pluck('id')->toArray();
+            $segment = $segment->whereIn('sb_id', $sb_id);
+        }
+        else if ($sb_id != -1 && $branch_id == -1)
+        {
+            $segment = $segment->where('sb_id', $sb_id);
+        }
+        else if ($sb_id == -1 && $branch_id != -1) 
+        {   
+            $sb_id = tblOrganization::where('parent_id', $rmb_id)->pluck('id')->toArray();
+            $segment = $segment->where('branch_id', $branch_id)->whereIn('sb_id', $sb_id);
+        }
+        else
+        {
+            $segment = $segment->where('branch_id', $branch_id)
+                               ->where('SB_id', $sb_id);
+        }
+        foreach ($segment->get() as $r)
+        {
+            $segment_id[] = $r->id; 
+        }
+
+        $sectiondataMH = tblSectiondataMH::selectRaw('YEAR(survey_time) as year, sum(actual_length) as 
+            total')
+                    ->whereIn('segment_id', $segment_id)
+                    ->groupBy(DB::raw('YEAR(survey_time)'))
+                    ->orderBy(DB::raw('year'), 'asc')
+                    ->get();
+        foreach ($sectiondataMH as $r)
+        {
+            $data[] = ['survey_time' => $r->year, 'total_length' => $r->total];
+        }
+        return $data;
+    }
+
+    public function repairWork(Request $request)
+    {   
+        $data_segment = [];
+        $year = $request->year;
+        $repair_method = $request->repair_method;
+        $repair_category = $request->repair_category;
+        //$segment = $this->_findSegment_id($request);// get segment_id with branch
+        $name = App::isLocale('en') ? 'name_en' : 'name_vn';
+
+
+
+
+
+        // foreach ($segment->get() as $r)
+        // {
+        //     $data_segment[$r->tblBranch->$name][] = $r->id;
+        // }
+        $current_year = date('Y');
+        $min_year = $current_year - $year + 1;
+        $survey_time = [];
+        for ($i = $min_year ; $i <= $current_year; $i++)
+        {
+            $survey_time[] = $i;
+        }
+
+        $total = DB::raw("SELECT sum(mh.actual_length), YEAR(survey_time) as year_st, s.branch_id
+                            FROM `tblSectiondata_MH` mh
+                            JOIN tblSegment s ON mh.segment_id = s.id
+                            GROUP BY s.branch_id, year_st"
+                        );
+        dd($total);
+
+        // $data = [];
+        // $labels = [];
+        // foreach ($data_segment as $k =>  $r)
+        // {   
+        //     $labels[] = $k; // get labels for chart
+        //     $data[$k] = $this->_conditionMH($r, $year, $repair_method, $repair_category); //get data left data chart
+        //     $total_length_RI = $this->__getRILength($r); 
+        //     if ($total_length_RI != 0)
+        //     {
+        //         $right_data[] = round((($this->_total_actual_length($r, $year, $repair_method, $repair_category))/($total_length_RI))*100, 2);// get % right data chart
+        //     }
+        //     else
+        //     {
+        //         $right_data[] = 0; 
+        //     }
+        // }
+
+
+        foreach ($data as $k => $r)
+        {
+            $tmp_survey_time = [];
+            foreach ($r as $v)
+            {
+                $tmp_survey_time[] = $v['survey_time'];
+            }
+
+            foreach ($survey_time as $k_s => $s)
+            {
+                if (in_array($s, $tmp_survey_time))
+                {   
+                    $key = array_search($s, $tmp_survey_time); // get key of year in array
+                    $left_data[$s][] = $r[$key]['total_length'];
+                }
+                else
+                {
+                    $left_data[$s][] = 0;
+                }
+            }
+        }
+        return ['left_data' => $left_data, 'right_data' => $right_data, 'labels' => $labels];
+
+    }
+
+    public function getDataTable(Request $request)
+    {
+        $data_table = [];
+        $data_segment = [];
+        $data = [];
+        $survey_data = [];
+        $year = $request->year;
+        $repair_method = $request->repair_method;
+        $repair_category = $request->repair_category;
+        $segment = $this->_findSegment_id($request);
+        $name = App::isLocale('en') ? 'name_en' : 'name_vn';
+        foreach ($segment->get() as $r)
+        {
+            $data_segment[$r->tblBranch->$name][] = $r->id;
+        }
+        foreach ($data_segment as $k => $r)
+        {   
+            $data[$k] = $this->_conditionMH($r, $year, $repair_method, $repair_category); 
+        }
+        $max_s = date('Y');
+        $min_s = date('Y') - $year + 1;
+        for ($i = $min_s; $i <= $max_s; $i ++)
+        {
+            $survey_data[] = $i;
+        }
+        foreach ($data as $k => $r)
+        {   
+            if (empty($data[$k]))
+            {   
+                for ($i = $min_s; $i <= $max_s; $i++) 
+                {
+                    $data_table[$k]['data'][] = ['survey_time' => $i, 'total_length' => 0];
+                }
+                $data_table[$k]['total'] = 0;   
+            }
+            else
+            {   
+                $total = 0;
+                $survey_time = [];
+                foreach ($r as $key => $v)
+                {
+                    $survey_time[] = $v['survey_time'];
+                    $total += $v['total_length'];  
+                }
+                for ($i = $min_s; $i <= $max_s; $i++) 
+                {
+                    if (!in_array($i, $survey_time))
+                    {
+                        $data_table[$k]['data'][] = ['survey_time' => $i, 'total_length' => 0];
+                    }
+                    else
+                    {
+                        $key = array_search($i, $survey_time);
+                        $data_table[$k]['data'][] = $data[$k][$key];
+                    }
+                }
+                $data_table[$k]['total'] = $total;
+            }
+        }
+        return [$data_table, $survey_data];
+    }
+
+    private function _conditionMH($segment_id, $year, $repair_method, $repair_category)
+    {   
+        $data = [];
+        $min_year = date('Y') - $year + 1;
+        $name = App::isLocale('en') ? 'name_en' : 'name_vn';
+        $sectiondataMH = tblSectiondataMH::with('segment', 'segment.tblBranch', 'segment.tblOrganization')
+                        ->selectRaw('YEAR(survey_time) as year, sum(actual_length) as total, segment_id')->whereIn('segment_id', $segment_id);
+        if ($repair_method != -1 && $repair_category == -1)
+        {
+            $sectiondataMH = $sectiondataMH->where('repair_method_id', $repair_method);
+        }
+        else if ($repair_category != -1 && $repair_method == -1)
+        {
+            $sectiondataMH = $sectiondataMH->where('r_category_id', $repair_category);
+        }
+        else if ($repair_category != -1 && $repair_method != -1)
+        {
+            $sectiondataMH = $sectiondataMH->where('r_category_id', $repair_category)
+                                    ->where('repair_method_id', $repair_method);
+        }
+        $sectiondataMH = $sectiondataMH->whereRaw("YEAR(survey_time) <= YEAR(CURRENT_TIMESTAMP)")
+                                ->whereRaw("YEAR(survey_time) >= $min_year")
+                                ->groupBy(DB::raw('YEAR(survey_time)'))
+                                ->orderBy(DB::raw('YEAR(survey_time)'), 'desc')
+                                ->get();
+        foreach ($sectiondataMH as $r)
+        {
+            $data[] = [
+                // 'sb' => $r->segment->tblOrganization->$name,
+                // 'route_name' => $r->segment->tblBranch->$name,
+                'survey_time' => $r->year, 
+                'total_length' => $r->total,
+            ];
+        }
+        return $data;
+    }
+
+    public function exportSummaryMR(Request $request)
+    {
+        dd($request->all());
+        $data_table = [];
+        $data_summary_table = []; //data  sheet 2
+        $data_list_MH = []; // data sheet 3
+        $data = [];
+        $year = $request->year;
+        $repair_method = $request->repair_method;
+        $repair_category = $request->repair_category;
+        $min_year = date('Y') - $year + 1;
+        $name = App::isLocale('en') ? 'name_en' : 'name_vn';
+        $rmb_name = tblOrganization::where('id', $request->rmb_id)->first()->$name;
+        // data summary table
+        $segment = $this->_findSegment_id($request);
+        foreach ($segment->get() as $r)
+        {
+            $segment_id[] = $r->id; 
+        }
+       
+        $sectiondataMH = tblSectiondataMH::with('segment', 'segment.tblBranch', 'segment.tblOrganization', 'repairMethod', 'repairCategory')
+                    ->whereIn('segment_id', $segment_id);
+        if ($repair_method != -1 && $repair_category == -1)
+        {
+            $sectiondataMH = $sectiondataMH->where('repair_method_id', $repair_method);
+        }
+        else if ($repair_category != -1 && $repair_method == -1)
+        {
+            $sectiondataMH = $sectiondataMH->where('r_category_id', $repair_category);
+        }
+        else if ($repair_category != -1 && $repair_method != -1)
+        {
+            $sectiondataMH = $sectiondataMH->where('r_category_id', $repair_category)
+                                    ->where('repair_method_id', $repair_method);
+        }
+        $data_sheet3 = clone($sectiondataMH);
+        $data_sheet3 = $data_sheet3->get();
+        foreach ($data_sheet3 as $r)
+        {   
+            $y = explode('-', $r->survey_time);
+            $data_list_MH[] = [
+                'road_name' => $r->segment->tblBranch->$name,
+                'branch_no' => $r->segment->tblBranch->branch_number,
+                'rmb' => $rmb_name,
+                'sb' => $r->segment->tblOrganization->$name,
+                'year' => $y[0], 
+                'actual_length' => $r->actual_length,
+                'repair_method' => ($r->repairMethod) ? $r->repairMethod->$name : '' ,
+                'repair_category' => ($r->repairCategory) ? $r->repairCategory->$name : '' 
+            ];
+        }
+        $data = [];
+        foreach ($data_list_MH as $r)
+        {
+            $data[$r['road_name']][] = $r;
+        }
+        dd($data);
+      
+       
+       
+    }
+
+    private function _findSegment_id($request)
+    {
+        $branch_id = $request->branch_id;
+        $sb_id = $request->sb_id;
+        $rmb_id = $request->rmb_id;
+        $data_segment = [];
+        $data = [];
+
+        $segment = tblSegment::with('tblBranch', 'tblOrganization')->select('id', 'branch_id', 'SB_id');
+        if ($sb_id == -1  && $branch_id == -1) 
+        {
+            $sb_id = tblOrganization::where('parent_id', $rmb_id)->pluck('id')->toArray();
+            $segment = $segment->whereIn('sb_id', $sb_id);
+        }
+        else if ($sb_id != -1 && $branch_id == -1)
+        {
+            $segment = $segment->where('sb_id', $sb_id);
+        }
+        else if ($sb_id == -1 && $branch_id != -1) 
+        {   
+            $sb_id = tblOrganization::where('parent_id', $rmb_id)->pluck('id')->toArray();
+            $segment = $segment->where('branch_id', $branch_id)->whereIn('sb_id', $sb_id);
+        }
+        else
+        {
+            $segment = $segment->where('branch_id', $branch_id)->where('SB_id', $sb_id);
+        }
+        return $segment;
+    }
+   
+
+    private function _total_actual_length($segment_id, $year, $repair_method , $repair_category)
+    {   
+        // $data = [];
+        // $segment_id = implode(',', $segment_id);
+        // $y_min = date('Y') - $year + 1;
+        // $sql = "";
+        // if ($repair_method == -1 && $repair_category == -1)
+        // {
+        //     $sql .= "SELECT SUM(table_new.total) as total FROM ((SELECT YEAR(survey_time) as year ,SUM(actual_length) as total FROM `tblSectiondata_MH` WHERE segment_id IN ($segment_id) AND YEAR(survey_time) <= YEAR(CURRENT_TIMESTAMP) AND  YEAR(survey_time) >= $y_min GROUP BY(YEAR(survey_time)) ) as table_new)";
+        // }
+        // else if ($repair_method != -1)
+        // {
+        //     $sql .= "SELECT SUM(table_new.total) as total FROM ((SELECT YEAR(survey_time) as year ,SUM(actual_length) as total FROM `tblSectiondata_MH` WHERE 'repair_method_id' = $repair_method  AND segment_id IN ($segment_id) AND YEAR(survey_time) <= YEAR(CURRENT_TIMESTAMP) AND  YEAR(survey_time) >= $y_min GROUP BY(YEAR(survey_time))) as table_new)";
+        // }
+        // else if ($repair_category != -1)
+        // {
+        //     $sql .= "SELECT SUM(table_new.total) as total FROM ((SELECT YEAR(survey_time) as year ,SUM(actual_length) as total FROM `tblSectiondata_MH` WHERE ' r_category_id' = $repair_category  AND segment_id IN ($segment_id) AND YEAR(survey_time) <= YEAR(CURRENT_TIMESTAMP) AND  YEAR(survey_time) >= $y_min GROUP BY(YEAR(survey_time))) as table_new)";
+        // }
+        // else if ($repair_category != -1 && $repair_method != -1)
+        // {
+        //     $sql .= "SELECT SUM(table_new.total) as total FROM ((SELECT YEAR(survey_time) as year ,SUM(actual_length) as total FROM `tblSectiondata_MH` WHERE ' r_category_id' = $repair_category AND 'repair_method_id' = $repair_method  AND segment_id IN ($segment_id) AND YEAR(survey_time) <= YEAR(CURRENT_TIMESTAMP) AND  YEAR(survey_time) >= $y_min GROUP BY(YEAR(survey_time))) as table_new)";
+        // }
+        // $data = DB::select(DB::raw(($sql)));
+        // if ($data[0]->total)
+        // {
+        //     return $data[0]->total;
+        // }
+        // return 0;
+
+
+               //         SELECT sum(mh.actual_length), YEAR(survey_time) as year_st, s.branch_id
+// FROM `tblSectiondata_MH` mh
+// JOIN tblSegment s ON mh.segment_id = s.id
+ 
+// group by s.branch_id, year_st
+    }
+
+    private function __getRILength($segment_id)
+    {
+        // return \App\Classes\Helper::calculateIntegratedRILength($request->rmb, $request->sb, null, $request->year, $request->pavement_type);
+        $sql = "select (count(id) * 100) as total_length from (SELECT * FROM `tblPMS_RI_info` WHERE pavement_type_code = 1 AND segment_id IN (" . implode(',', $segment_id) . ') ';
+       
+        $sql.= " and PMS_info_id IN (SELECT id FROM `tblPMS_sectioning_info` i where type_id = 1 and id = (SELECT id from tblPMS_sectioning_info where PMS_section_id = i.`PMS_section_id` and type_id = 1 and condition_year <= YEAR(CURRENT_TIMESTAMP) order by condition_year desc limit 1))) a";
+        $rsl = DB::select(DB::raw($sql));
+        return $rsl[0]->total_length;
+
+
+//         SELECT count(s.id)*100 as total_length, s.branch_id  
+// FROM `tblPMS_sectioning_info` as i 
+// JOIN tblPMS_sectioning as s ON s.id = i.PMS_section_id
+// WHERE i.id = (SELECT id FROM tblPMS_sectioning_info WHERE type_id =1 AND pms_section_id = i.pms_section_id ORDER BY condition_year DESC LIMIT 0, 1) AND i.type_id = 1 AND s.branch_id <> 0 AND s.branch_id IN (1, 2, 3, 4, 5, 6, 7, 8)
+// group by s.branch_id
+
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //         SELECT sum(mh.actual_length), YEAR(survey_time) as year_st, s.branch_id
+// FROM `tblSectiondata_MH` mh
+// JOIN tblSegment s ON mh.segment_id = s.id
+ 
+// group by s.branch_id, year_st
+
+
+
+//         SELECT count(s.id)*100 as total_length, s.branch_id  
+// FROM `tblPMS_sectioning_info` as i 
+// JOIN tblPMS_sectioning as s ON s.id = i.PMS_section_id
+// WHERE i.id = (SELECT id FROM tblPMS_sectioning_info WHERE type_id =1 AND pms_section_id = i.pms_section_id ORDER BY condition_year DESC LIMIT 0, 1) AND i.type_id = 1 AND s.branch_id <> 0 AND s.branch_id IN (1, 2, 3, 4, 5, 6, 7, 8)
+// group by s.branch_id
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        //
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
+    }
+}

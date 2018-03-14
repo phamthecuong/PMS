@@ -1,0 +1,40 @@
+<?php
+
+return array (
+  'import_master_not_exist' => 'Invalid selection data',
+  'radio_not_exist' => 'Invalid selection
+',
+  'asset_exists' => 'Data overlaps',
+  'import_lane_invalid' => 'Data of lane invalid',
+  'not_checked' => 'is not checked',
+  'checkbox_data_error' => 'Checkbox data error',
+  'mh_exists' => 'exist',
+  'not_exist' => 'Not exist',
+  'segment_not_exist' => 'Segment not exist',
+  'import_grand_total_invalid' => 'Grand total in your file invalid',
+  'import_heavy_traffic_total_invalid' => 'Total heavy traffic in your file invalid',
+  'import_traffic_volume_total_invalid' => 'Total Traffic volume in your file invalid',
+  'import_total5_invalid' => 'total traffic volume Heavy Truck  (>3 Axle) in your file invalid',
+  'import_total1_invalid' => 'total traffic volume Car, Jeep in your file invalid',
+  'import_total2_invalid' => 'total traffic volume Light Truck in your file invalid',
+  'import_total4_invalid' => 'total traffic volume Heavy Truck  (3 Axle) in your file invalid',
+  'import_total6_invalid' => 'total traffic volume Small Bus in your file invalid',
+  'import_total7_invalid' => 'total traffic volume Large Bus in your file invalid',
+  'import_total8_invalid' => 'total traffic volume Tractor in your file invalid',
+  'import_total9_invalid' => 'total traffic volume Motorbike including 3 Wheeler in your file invalid',
+  'import_total10_invalid' => 'total traffic volume Bicycle / Pedicab in your file invalid',
+  'import_total3_invalid' => 'total traffic volume Medium Truck  (2 Axles) in your file invalid',
+  'import_length_invalid' => 'Total chainage in your file invalid',
+  'import_total_invalid' => 'Total Thickness in your file invalid',
+  'empty_record' => 'File upload must not empty',
+  'km_station_not_exist' => 'Km, M are not between KM, M of segment',
+  'out_segment' => 'Km, M are not between KM, M of segment',
+  'service_start_year_invalid' => 'The Service Start Year field is required',
+  'construct_year_invalid' => 'The Construct Year field is required',
+  'inputdata_TV' => 
+  array (
+    'invalid' => 'Data input invalid',
+  ),
+  'construct_year_errors' => 'The Construct Year invalid format',
+  'service_start_year_errors' => 'The Service Start Year invalid format',
+);

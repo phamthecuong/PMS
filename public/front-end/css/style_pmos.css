@@ -1,0 +1,118 @@
+.main-table {
+	background: #fff;
+	color: #000000;
+}
+
+table#demo-pmos {
+	border: 2px solid #ccc;
+}
+
+table#demo-pmos tr td, table#demo-pmos tr th {
+	border: 1px solid #a2a2a2;
+	height: 10px !important;
+}
+
+td.rotate {
+	transform: translate(10px, 18px) rotate(-90deg);
+	width: 10px !important;
+}
+
+div.rotate {
+	transform: translate(15px, 600px) rotate(-90deg);
+	width: 5px !important;
+	white-space: nowrap
+}
+div.class20{
+	width: 20px;
+}
+div.class30{
+	width: 30px;
+}
+div.class40.fix-right{
+    width: 40px;
+    text-align: right;
+    float: right;
+    vertical-align: bottom;
+    top: 15px;
+    height: 20px;
+    position: relative;
+}
+div.class40.fix-right-top{
+    width: 40px;
+    text-align: right;
+    float: right;
+    vertical-align: bottom;
+    height: 20px;
+    top: -15px;
+    position: relative;
+}
+div.class100{
+	width: 100px;
+}
+div.class120{
+	width: 120px;
+}
+div.class150{
+	width: 150px;
+}
+div.class175{
+	width: 175px;
+}
+div.class200{
+	width: 200px;
+}
+div.class250{
+	width: 250px;
+}
+.hidden{
+	display: none; 
+}
+.indigo {
+	background: #4B0082;
+}
+.OrangeRed{
+	background: #FF4500;
+}
+.MidnightBlue{
+	background: #191970;
+}
+.aqua{
+	background: #00FFFF;
+}
+.Olive {
+	background: #808000;
+}
+.blue{
+	background: #0000FF;
+}
+.brown{
+	background: #A52A2A;
+}
+.chartreuse{
+	background: #7FFF00;
+}
+.white{
+	background: #fff;
+}
+.black{
+	background: #000;
+}
+.DeepSkyBlue{
+	background: #00BFFF;
+}
+.SteelBlue {
+	background: #4682B4;
+}
+.gold{
+	background: #FFD700;
+}
+.green{
+	background: #008000;
+}
+.dodgerblue{
+	background: #1E90FF;
+}
+.fuchsia{
+	background: #FF00FF;
+}
+  
