@@ -103,12 +103,11 @@
 								)
 						} else {
 							var start = convertMeterToPixelAxis(data[k].from);
-							console.log("start" + start);
 							var end = convertMeterToPixelAxis(data[k].to);
 							drawRectangle_axis(
 									start, 
 									y_now_data, 
-									end-start, 
+									end - start, 
 									10, 
 									$stage, 
 									color[type_data], 
@@ -211,10 +210,11 @@
 
 	function drawRectangle_axis(x_rec, y_rec, w, h, $stage, color, data, type, flash) {
 	    var rect = new createjs.Shape();
-		rect.graphics.setStrokeStyle(0.5)
-	                .beginStroke('black')
-	                .beginFill(color)
-					.drawRect(x_rec, y_rec, w, h);
+		rect.graphics
+			.setStrokeStyle(0.5)
+	        .beginStroke('black')
+	        .beginFill(color)
+			.drawRect(x_rec, y_rec, w, h);
 		rect.y = y_rec;
 	   
 	    if (flash) {
@@ -228,12 +228,21 @@
 	    	$stage.cursor = "pointer";
 	    	rect.addEventListener('mouseover', function(e) {
                 if (e.stageX > 800) {
-                    var x_left = e.stageX-150;
+                    var x_left = e.stageX - 150;
                 }else {
                     var x_left = e.stageX;
                 }
-                $('.popup_info_history').show().css({'left': x_left +10, 'top': y_rec + 100, 'color': 'black'});
-                $('#detail_history').text('Km ' + getInfoZoom(data.from, false).km +'+'+ getInfoZoom(data.from, false).m +' - '+'Km ' +getInfoZoom(data.to, false).km +'+'+ getInfoZoom(data.to, false).m);
+                $('.popup_info_history').show().css({ 'left': x_left + 10, 'top': y_rec + 100, 'color': 'black' });
+                $('#detail_history').text(	'Km ' 
+                							+ getInfoZoom(data.from, false).km 
+            								+ '+'
+            								+ getInfoZoom(data.from, false).m 
+            								+ ' - '
+            								+ 'Km ' 
+            								+ getInfoZoom(data.to, false).km 
+            								+ '+'
+            								+ getInfoZoom(data.to, false).m
+                						);
             })
             rect.addEventListener('mouseout', function() {
                 $('.popup_info_history').hide();
@@ -246,19 +255,21 @@
   	function text_axis(x_axis, i, text, $stage, type) {
   		var y_text = 100 + i * 50;
   		labels_x[i] = new createjs.Text('x', '14px Arial', '#333');
-		labels_x[i].x = x_axis+10;
+		labels_x[i].x = x_axis + 10;
 	    labels_x[i].y = y_text; 
 	    stage.addChild(labels_x[i]);
+
 	    labels_x[i].text = text;
 	    labels_x[i].textAlign = 'right';
 	    $stage.addChild(labels_x[i]);
+
   		if (type == 'TV') {
   			var line = new createjs.Shape();
 	        line.graphics
 	            .setStrokeStyle(1)
 	            .beginStroke('black')
 	            .setStrokeDash([2, 5], 0)
-	            .moveTo(x_axis+20, y_text + 10)
+	            .moveTo(x_axis + 20, y_text + 10)
 	            .lineTo(xaxis_width + 50, y_text + 10)
 	            .endStroke()
 			$stage.addChild(line);	
@@ -266,7 +277,8 @@
   	}
 
   	function convertMeterToPixelAxis(m) {
-  		var value = (width_zoom_zone - 100) * (m-convertPixelToMeter(limit_left_px)) / (convertPixelToMeter(limit_right_px) - convertPixelToMeter(limit_left_px));
+  		var value = (width_zoom_zone - 100) * (m-convertPixelToMeter(limit_left_px)) / 
+  					(convertPixelToMeter(limit_right_px) - convertPixelToMeter(limit_left_px));
         return +Math.round(value) + 70 ;
   	}
 
@@ -279,14 +291,19 @@
         r_mc.scaleX = 0.1; 
         r_mc.scaleY = 0.1; 
         $stage.addChild(r_mc);
+
         if (flash) {
             r_mc.addEventListener('click', function() {
                 showModalTVS(data.id);
             });
             r_mc.cursor = "pointer";
             r_mc.addEventListener('mouseover', function(e) {
-                $('.popup_info_history').show().css({'left': e.stageX, 'top': y+20, 'color': 'black'});
-                $('#detail_history').text('Km ' + getInfoZoom(data.station, false).km +'+'+ getInfoZoom(data.station, false).m);
+                $('.popup_info_history').show().css({ 'left': e.stageX, 'top': y + 20, 'color': 'black' });
+                $('#detail_history').text(	'Km ' 
+                							+ getInfoZoom(data.station, false).km 
+            								+ '+' 
+            								+ getInfoZoom(data.station, false).m
+            							);
             })
             r_mc.addEventListener('mouseout', function() {
                 $('.popup_info_history').hide();

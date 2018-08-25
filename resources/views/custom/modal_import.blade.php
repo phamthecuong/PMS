@@ -222,22 +222,21 @@
         }
 
         .controls {
-          margin-bottom: 10px;
+            margin-bottom: 10px;
         }
 
         .collapse-group {
-
-          margin-bottom: 10px;
+            margin-bottom: 10px;
         }
 
         .panel-title .trigger:before {
-          content: '\e082';
-          font-family: 'Glyphicons Halflings';
-          vertical-align: text-bottom;
+            content: '\e082';
+            font-family: 'Glyphicons Halflings';
+            vertical-align: text-bottom;
         }
 
         .panel-title .trigger.collapsed:before {
-          content: '\e081';
+            content: '\e081';
         }
     
         .error {

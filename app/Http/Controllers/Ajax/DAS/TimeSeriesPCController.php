@@ -160,7 +160,8 @@ class TimeSeriesPCController extends Controller
     }
 
     public function loadYear(Request $request) 
-    {
+    {   
+        $year = [];
         $rmb_id = $request->rmb_id;
         $sb_id = tblOrganization::where('parent_id', $rmb_id)->pluck('id')->toArray();
         $PC = tblSectionPCHistory::select('date_y')

@@ -19,7 +19,8 @@
 		color = {
             RMD: 'rgba(0, 0, 255, 0.8)', RMD1: 'rgba(103, 51, 141, 0.8)', RMD2: 'rgba(230, 5, 215, 0.8)', RMDOther: 'rgba(127, 127, 127, 0.8)',
             MH: 'rgba(255, 0, 0, 0.8)', MH1: 'rgba(242, 101, 14, 0.8)', MH2: 'rgba(57, 12, 12, 0.8)', MH_1: 'rgb(6, 231, 43)', 
-            MH_2: 'rgb(80, 200, 120)', MH_3: 'rgb(255, 215, 0)', MH_4: 'rgb(11, 56, 97)', MHOther: 'rgba(195, 176, 145, 0.8)'},
+            MH_2: 'rgb(80, 200, 120)', MH_3: 'rgb(255, 215, 0)', MH_4: 'rgb(11, 56, 97)', MHOther: 'rgba(195, 176, 145, 0.8)'
+        },
         type = ['RMD','MH','TV'],
         boundary_right,
         boundary_left,

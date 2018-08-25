@@ -17,14 +17,12 @@ class IndexController extends Controller
 	public function getOrganization(Request $request)
 	{
 		$oi = Auth::user()->organization_id;
-		// $level = Auth::user()->organizations->level;
 		$parent_id = $request->parent_id;
 		if ($parent_id == -1)
 		{
 			if (\Auth::user()->hasRole("userlv1") || \Auth::user()->hasRole("userlvl1p") || Auth::user()->hasRole("superadmin"))
 			{
 				$data = tblOrganization::whereNotNull('parent_id')->get();
-
 			}
 			elseif (\Auth::user()->hasRole("userlv2"))
 			{

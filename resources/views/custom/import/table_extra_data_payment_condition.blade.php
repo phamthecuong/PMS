@@ -1,4 +1,5 @@
 <?php
+
     $columns = array_merge([
         [
             'class' => 'details-control',

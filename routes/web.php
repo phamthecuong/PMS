@@ -720,6 +720,11 @@ Route::group(['middleware'=> 'auth'], function () {
     Route::resource('pmos', 'FrontEnd\PMoS\PavementMonitoringSoftwareController');
     Route::resource('condition', 'Admin\ConditionRankController');
     Route::get('getCrack', 'Admin\ConditionRankController@getCrack');
+
+    //my custom refactor inputting
+    Route::get('inputtingRefactor', function() {
+        return view("front-end.m13.inputting_system.refactor_script.index");
+    });
     
 });
 
@@ -752,3 +757,5 @@ Route::group(['middleware'=> 'auth'], function (){
 Route::get('test', function() {
     return 1;
 });
+
+

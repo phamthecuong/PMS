@@ -17,18 +17,14 @@
 @endsection
 
 @push('script')
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.js"></script>
 <script>
-//var ctx = document.getElementById("myChart");
-// $(function() {
-// 	$('#myChart').attr('width', '300px');
-// 	$('#myChart').attr('height', '400px');
-// });
-//var myChart = new Chart(ctx, {
 	$(function() {
 		$('#nestedDoughnut').attr('width', '100px');
 		$('#nestedDoughnut').attr('height', '400px');
 	});
+
     var resourceChartElement = document.getElementById("nestedDoughnut");
     var resourceChart = new Chart(resourceChartElement, 
     {
@@ -63,6 +59,6 @@
     	}
 
     });
-//});
 </script>
+
 @endpush

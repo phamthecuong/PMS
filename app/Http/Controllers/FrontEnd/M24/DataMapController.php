@@ -30,7 +30,7 @@ class DataMapController extends Controller
 		$km = intval(substr($section_code, 12, 4));
 		$mode = $request->mode;
 		$date_y = $request->year;
-		$data = $this->JoinTable();
+		$data = $this->_JoinTable();
 		$data = $data->whereRaw("SUBSTR(p.section_code, 2, 3) = '{$route_number}'")
 			->whereRaw("SUBSTR(p.section_code, 8, 2) = '{$branch_number}'");
 		switch ($mode) 
@@ -72,7 +72,7 @@ class DataMapController extends Controller
 		return $data;
 	}
 
-	function JoinTable()
+	private function _JoinTable()
 	{	
 		$data = DB::table('tblSection_PC AS p')
 			->select(DB::raw('h.*'))

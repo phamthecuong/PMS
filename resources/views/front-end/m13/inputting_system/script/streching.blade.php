@@ -16,7 +16,7 @@
         height_lane = 5, //height default section (px)
         axis_left_lane0 = 5, // axis y default lane 0 (px)
         axis_right_lane0 = axis_left_lane0 + height_lane,
-        mid_height =($('#streching_area').height())/2,
+        mid_height = ($('#streching_area').height())/2,
         default_width_limit = 11380,// (m)
         width_zoom_zone = $('#streching_area').parent().width() - 13;
         direction_text = {en:['L', 'R'], vn: ['T', 'P']};
@@ -81,7 +81,6 @@
                 }
                
                 getDataZoomZone(limit_left, limit_right);
-
             }
         });
         //resize    
@@ -311,6 +310,7 @@
             // info segement
             $('#km_from').html('km'+ response.info.km_from + '+' + response.info.m_from);
             $('#km_to').html('km'+ response.info.km_to + '+' + response.info.m_to);
+
             changeBoundaryInfo(
                     response.info.km_from , 
                     response.info.m_from, 
@@ -329,8 +329,8 @@
         stage.removeAllChildren();
         var no_lane = data.info.no_lane;
         for (var x in type) {
+             var data_type = data[type[x]];
             if (type[x] == 'TV') {
-                var data_type = data[type[x]];
                 if (jQuery.isEmptyObject(data_type) == false) {
                     for (var i in data_type) {
                         var start_point = convertMeterToPixel(
@@ -350,7 +350,6 @@
                     }
                 }
             } else if (type[x] != 'info')  {
-                var data_type = data[type[x]];
                 if (jQuery.isEmptyObject(data_type) == false) {
                     for (var i in data_type) {
                         DrawData(

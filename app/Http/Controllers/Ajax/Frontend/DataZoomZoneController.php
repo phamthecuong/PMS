@@ -27,7 +27,10 @@ class DataZoomZoneController extends Controller
         $to = $request->limit_right; 
         $data = [];
         $lane_no = 0;
-        $tblSectiondataMH = tblSectiondataMH::with('repairCategory')->where('segment_id', $segment_id)->orderBy('survey_time')->get();
+        $tblSectiondataMH = tblSectiondataMH::with('repairCategory')
+                            ->where('segment_id', $segment_id)
+                            ->orderBy('survey_time')
+                            ->get();
 
         if (!empty($tblSectiondataMH))
         {
