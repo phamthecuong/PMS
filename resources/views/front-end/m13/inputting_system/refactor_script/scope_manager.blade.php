@@ -136,7 +136,6 @@
 			},
 
 			drawCanvas: function() {
-				console.log("draw canvas", this.segment_select);
 				this.$root.$emit('drawCanvas', {segmentId: this.segment_select});
 			}
 		}

@@ -104,6 +104,7 @@
 						} else {
 							var start = convertMeterToPixelAxis(data[k].from);
 							var end = convertMeterToPixelAxis(data[k].to);
+							console.log("start:"+ start + "end:" + end);
 							drawRectangle_axis(
 									start, 
 									y_now_data, 
@@ -216,7 +217,7 @@
 	        .beginFill(color)
 			.drawRect(x_rec, y_rec, w, h);
 		rect.y = y_rec;
-	   
+	   	console.log("x_rec:"+ x_rec + "y_rec:" + y_rec);
 	    if (flash) {
 	    	rect.addEventListener('click', function() {
 		    	if (type == "MH") {
@@ -277,8 +278,9 @@
   	}
 
   	function convertMeterToPixelAxis(m) {
-  		var value = (width_zoom_zone - 100) * (m-convertPixelToMeter(limit_left_px)) / 
+  		var value = (width_zoom_zone - 100) * (m - convertPixelToMeter(limit_left_px)) / 
   					(convertPixelToMeter(limit_right_px) - convertPixelToMeter(limit_left_px));
+  		console.log("right:" + limit_right_px);
         return +Math.round(value) + 70 ;
   	}
 
@@ -317,6 +319,7 @@
         $stage_RMD.removeAllChildren();
         $stage_MH.removeAllChildren();
         $stage_TV.removeAllChildren();
+
         $stage_RMD.update();
         $stage_MH.update();
         $stage_TV.update();

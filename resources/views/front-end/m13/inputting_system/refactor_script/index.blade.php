@@ -122,57 +122,7 @@
 
             <streching></streching>
 
-            <article class="col-sm-12 sortable-grid ui-sortable">
-                <!-- new widget -->
-                <div class="jarviswidget jarviswidget-sortable" id="wid-id-0" data-widget-togglebutton="false" data-widget-editbutton="false"data-widget-fullscreenbutton="false" data-widget-colorbutton="false" data-widget-deletebutton="false" role="widget">
-                    <header role="heading">
-                        <span class="widget-icon"> <i class="fa fa-history" aria-hidden="true"></i></span>
-                        <h2>{{trans('inputting.histoty_survey')}}</h2>
-                        <ul class="nav nav-tabs pull-right in" id="myTab">
-                            <li class="active">
-                                <a data-toggle="tab" href="#s1" aria-expanded="true"><i class="fa fa-info-circle" aria-hidden="true"></i><span class="hidden-mobile hidden-tablet"> {{trans('inputting.RMD')}}</span></a>
-                            </li>
-                            <li class="">
-                                <a data-toggle="tab" href="#s2" aria-expanded="false"><i class="fa fa-history" aria-hidden="true"></i><span class="hidden-mobile hidden-tablet"> {{trans('inputting.MH')}}</span></a>
-                            </li>
-                            <li class="">
-                                <a data-toggle="tab" href="#s3" aria-expanded="false"><i class="fa fa-map-marker" aria-hidden="true"></i><span class="hidden-mobile hidden-tablet"> {{trans('inputting.TV')}}</span></a>
-                            </li>
-                        </ul>
-                        <span class="jarviswidget-loader"><i class="fa fa-refresh fa-spin"></i></span>
-                    </header>
-                    <!-- widget div-->
-                    <div class="no-padding" role="content">
-                        <div class="widget-body" style="position: relative;">
-                            <!-- content -->
-                            <div id="myTabContent" class="tab-content" >
-                                <div class="tab-pane fade padding-10 no-padding-bottom active in" id="s1">
-                                    <canvas style="" id="RMD_history"></canvas>
-                                    <p class="note_RMD">{{trans('inputting.no_data_RMD')}}</p>
-                                </div>
-                                <!-- end s1 tab pane -->
-                                <div class="tab-pane fade" id="s2">
-                                    <canvas style="" id="MH_history"></canvas>
-                                    <p class="note_MH">{{trans('inputting.no_data_MH')}}</p>
-                                </div>
-                                <!-- end s2 tab pane -->
-                                <div class="tab-pane fade" id="s3">
-                                    <canvas style="" id="TV_history"></canvas>
-                                    <p class="note_TV">{{trans('inputting.no_data_TV')}}</p>
-                                </div>
-                                <!-- end s3 tab pane -->
-                               
-                            </div>
-                            <!-- end content -->
-                            <div class="popup_info_history" style="position: absolute; width: auto; height: auto; border:1px solid black; display: none;">
-                                    <div style="" id="detail_history"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end widget div -->
-                </div>
-            <!-- end widget -->
-            </article>
+            <history></history>
 
         </div>
     </section>
@@ -185,6 +135,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>
     <script src="https://code.createjs.com/easeljs-0.8.2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vuex/3.0.1/vuex.js"></script>
+
+
+    <script type="text/javascript">
+        var mixin = {
+            methods: {
+                // convertPixelToMeter: function() {
+                //     var value = (width_zoom_zone - 100) * (m - this.convertPixelToMeter(limit_left_px)) / 
+                //             (this.convertPixelToMeter(limit_right_px) - this.convertPixelToMeter(limit_left_px));
+                //     return +Math.round(value) + 70 ;
+                // },
+
+                // convertPixelToMeter(px) {
+                //     var m = (px*(this.boundaryRight - this.boundaryLeft) / this.widthCanvas) 
+                //             + this.boundaryLeft;
+                //     return Math.round(m);
+                // },
+            }
+        }
+    </script>
 
     @include('front-end.m13.inputting_system.refactor_script.scope_manager')
 
@@ -207,7 +176,6 @@
         });
 
         // init instance store and vue
-
         var store = new Vuex.Store({
             state: {
                 colors: { 
@@ -215,7 +183,15 @@
                     MH: 'rgba(255, 0, 0, 0.8)' 
                 },
                 segmentId: '',
-                widthCanvas: ''
+                widthCanvas: 0,
+                limitPx: {
+                    left: 0,
+                    right: 100
+                },
+                boundary: {
+                    left: 0,
+                    right: 100
+                }
             },
             getters: {
                 getSegmentId: function(state) {
@@ -228,6 +204,14 @@
 
                 getColor: function(state) {
                     return state.colors;
+                },
+
+                getLimitPx: function(state) {
+                    return state.limitPx;
+                },
+
+                getBoundary: function(state) {
+                    return state.boundary;
                 }
             },
             mutations: {
@@ -236,9 +220,16 @@
                 },
                 setWidthCanvas: function(state, payload) {
                     state.widthCanvas = payload.widthCanvas;
+                },
+                setLimitPx: function(state, payload) {
+                    state.limitPx.left  = payload.left; 
+                    state.limitPx.right = payload.right; 
+                },
+                setBoundary: function(state, payload) {
+                    state.boundary.left  = payload.left;
+                    state.boundary.right = payload.right;
                 }
-
-            }
+            },
         });
 
         var app = new Vue({

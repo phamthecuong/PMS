@@ -1,5 +1,7 @@
 <script src="https://code.createjs.com/easeljs-0.8.2.min.js"></script>
 <script>
+
+
     segment_select.on('change', getDataSegment);
     $("#zoom_zone").contextmenu(function(e) {
         e.preventDefault();
@@ -89,15 +91,17 @@
             minWidth: 10,
             containment: '#streching_area',
             resize: function( event, ui ) {
-                limit_left_header = ui.position.left;
                 width_header = ui.size.width;
+                limit_left_header = ui.position.left;
                 limit_right_header = limit_left_header + width_header;
+                
                 $('.from_zoom').text('Km'+getInfoZoom(limit_left_header, true).km+'+'+getInfoZoom(limit_left_header, true).m +' - '+ 'Km'+getInfoZoom(limit_right_header, true).km+'+'+getInfoZoom(limit_right_header, true).m);
             },
             stop: function(e, ui) {
-                limit_left_px = ui.position.left;
                 width_px = ui.size.width;
+                limit_left_px = ui.position.left;
                 limit_right_px = ui.size.width + ui.position.left;
+                
                 limit_left = convertPixelToMeter(limit_left_px);
                 limit_right =  convertPixelToMeter(limit_right_px);
 
@@ -110,35 +114,23 @@
 
     function hideShowData() {
         $('#RMD_hide').click(function(){
-            if ($('#RMD_hide').is(':checked')) {
-                RMD_show = true;
-            } else {
-                RMD_show = false;
-            }
+            RMD_show = ($('#RMD_hide').is(':checked')) ? true : false;
             reloadDataZoomZone();
         });
 
         $('#MH_hide').click(function() {
-            if ($('#MH_hide').is(':checked')) {
-                MH_show = true;
-            } else {
-                MH_show = false;
-            }
+            MH_show = ($('#MH_hide').is(':checked')) ? true : false;
             reloadDataZoomZone();
         });
 
         $('#TV_hide').click(function() {
-            if ($('#TV_hide').is(':checked')) {
-                TV_show = true;
-            } else {
-                TV_show = false;
-            }
+            TV_show = ($('#TV_hide').is(':checked')) ? true : false;
             reloadDataZoomZone();
         });
     }
 
     function getDataZoomZone(limit_left, limit_right) {
-
+        var zoomZoneSelect = $('#zoom_zone');
         var url = 'ajax/frontend/getDataZoomZone';
         $.ajax({
             url: url,
@@ -152,33 +144,46 @@
         .done(function(response) {
             stage_zoom.removeAllChildren();
             removeElementHistory();
+            
             var lane_no = response.segment_info.lane_no;
-            // set height, width zoom zone
-            $('#zoom_zone').attr('height', (lane_no + 1)*50 + 20);
-            space_left = ($('#zoom_zone').height())/2 - width_lane/2;
-            space_right = space_left + width_lane;
-            offset_first = (($('#zoom_zone').height())/2) - 5*width_lane/2 + 7;
-            offset_second = offset_first + width_lane;
             var width_axis_y = (lane_no + 1) * width_y;
-            //change limit zoom zone
+
+            zoomZoneSelect.attr('height', (lane_no + 1)*50 + 20);
+            space_left = (zoomZoneSelect.height() / 2) - width_lane / 2;
+            console.log("space left", space_left);
+            space_right = space_left + width_lane;
+            offset_first = (zoomZoneSelect.height() / 2) - 5*width_lane / 2 + 7;
+            offset_second = offset_first + width_lane;
+           
             changeLimitInfo(limit_left, limit_right);   
-            // generate checbox
             addCheckbox(lane_no); 
-            // info segment
+
             drawInfoZoom( 
                     'Km ' + getInfoZoom(limit_left_px, true).km + '+' + getInfoZoom(limit_left_px, true).m, 
                     65, 
-                    space_right + (lane_no/2)*width_lane + 5,
+                    space_right + (lane_no / 2)*width_lane + 5,
                     'white',
                     stage_zoom
                 );
             drawInfoZoom( 
                     'Km ' + getInfoZoom(limit_right_px, true).km + '+' + getInfoZoom(limit_right_px, true).m, 
                     width_zoom_zone - 114, 
-                    space_right + (lane_no/2)*width_lane + 5,
+                    space_right + (lane_no / 2)*width_lane + 5,
                     'white',
                     stage_zoom
                 );
+
+            if (lane_no == 1) {
+                if (RMD_show == true) {
+                    drawZoomType(response, 'RMD', 1, 1);;
+                }
+                if (MH_show == true) {
+                    drawZoomType(response, 'MH', 1, 1);
+                }
+                if (TV_show == true) {
+                    drawZoomType(response, 'TV', 1, 1);
+                }
+            }
            
             for ( var lane_post = 1; lane_post <= lane_no; lane_post++ ) {
                 //draw axist
@@ -193,17 +198,7 @@
                     if (TV_show == true) {
                         drawZoomType(response, 'TV', lane_post, lane_no);
                     }
-                } else if (lane_no == 1) {
-                    if (RMD_show == true) {
-                        drawZoomType(response, 'RMD', 1, 1);;
-                    }
-                    if (MH_show == true) {
-                        drawZoomType(response, 'MH', 1, 1);
-                    }
-                    if (TV_show == true) {
-                        drawZoomType(response, 'TV', 1, 1);
-                    }
-                }
+                } 
             }
             drawAxisY(width_axis_y); // fixed axist Y
             drawLaneSinger();// draw lane singer
@@ -219,17 +214,21 @@
     function drawZoomType(data_type, type, lane_post, lane_no) {
         for (var x in data_type[type]) {
             var data = data_type[type][x];
+           
             var x = convertMeterToPixelZoom(data.from) + 62 ; // start from
-            var y = ((width_lane - 5) - convertWidthLane(data.lane_width))/2;
+            var y = ((width_lane - 5) - convertWidthLane(data.lane_width)) / 2;
+           
             var start_point = convertMeterToPixelZoom(data.from);
             var end_point = convertMeterToPixelZoom(data.to);
-            if (type == 'MH' || type == 'RMD') {
+            
+            if (type !== 'TV') {
                 if (data.lane_pos_number == lane_post) {
                     if (data.direction == 1) { // left
-                        var y_rect = offset_first - lane_post*width_lane + y;
+                        var y_rect = offset_first - lane_post * width_lane + y;
                         if (type == 'MH') { // set distance MH
                             if (data.direction_running == 0) {
                                 y_rect = y_rect - convertWidthLane(data.distance);
+                            
                             } else if (data.direction_running == 1) {
                                 y_rect = y_rect + convertWidthLane(data.distance);
                             }    
@@ -244,11 +243,13 @@
                             data,
                             type
                         )
+
                     } else if (data.direction == 2) {  //right
-                        var y_rect = offset_second + lane_post*width_lane - width_lane + y
+                        var y_rect = offset_second + lane_post*width_lane - width_lane + y;
                         if (type == 'MH') { // set distance MH
                             if (data.direction_running == 0) { 
                                 y_rect = y_rect - convertWidthLane(data.distance);
+                            
                             } else if (data.direction_running == 1) {
                                 y_rect = y_rect + convertWidthLane(data.distance);
                             }    
@@ -264,11 +265,13 @@
                             type
                         )
                     }
+
                 } else if (data.lane_pos_number == 0 && data.direction == 3) {  //singer
                     var y_rect = offset_first  + y;
                     if (type == "MH") { // set distance MH
                         if (data.direction_running == 0) {
                             y_rect = y_rect - convertWidthLane(data.distance);
+                        
                         }else if (data.direction_running == 1) {
                             y_rect = y_rect + convertWidthLane(data.distance);
                         }    
@@ -284,11 +287,12 @@
                         type
                     )
                 }
+            
             } else { // draw TV
-                var y_text_offset = 90;
+                //var y_text_offset = 90;
                 drawTV(
                     convertMeterToPixelZoom(data.station) + width_lane + 10, 
-                    offset_first - (lane_no/2)*width_lane + 60,
+                    offset_first - (lane_no / 2) * width_lane + 60,
                     true,
                     data
                 );
@@ -297,13 +301,15 @@
     }
 
 	function getDataSegment() {
-        var sg_id =  $('#segment option:selected').val();
         var url = '/ajax/frontend/data_segment';
-        segement_id = sg_id;
+        segement_id =  $('#segment option:selected').val();
+
         $.ajax({
             url: url,
             method: 'GET',
-            data: {segment_id: sg_id}
+            data: {
+                segment_id: segement_id
+            }
         })
         .done(function(response) {
             console.log(response);
@@ -328,10 +334,12 @@
     function mainDraw(data) {
         stage.removeAllChildren();
         var no_lane = data.info.no_lane;
+        
         for (var x in type) {
-             var data_type = data[type[x]];
+            var data_type = data[type[x]];
             if (type[x] == 'TV') {
                 if (jQuery.isEmptyObject(data_type) == false) {
+                    
                     for (var i in data_type) {
                         var start_point = convertMeterToPixel(
                                             convertToMeter(
@@ -339,8 +347,7 @@
                                                 data_type[i].m_station
                                             )
                                         );
-                        var y_TV = axis_left_lane0 - (no_lane/2)*height_lane + 30;
-                        console.log(y_TV);
+                        var y_TV = axis_left_lane0 - (no_lane / 2) * height_lane + 30;
                         drawTV(
                             start_point - 15, 
                             y_TV , 
@@ -349,8 +356,10 @@
                         );
                     }
                 }
+
             } else if (type[x] != 'info')  {
                 if (jQuery.isEmptyObject(data_type) == false) {
+                    
                     for (var i in data_type) {
                         DrawData(
                             data_type[i], 
@@ -369,9 +378,10 @@
     function DrawData(data , color, height_lane, no_lane, type) {
         var start_point = convertMeterToPixel(convertToMeter(data.km_from, data.m_from));
         var end_point = convertMeterToPixel(convertToMeter(data.km_to, data.m_to));
+        
         for (var no = 0; no <= no_lane / 2; no ++) {
             if (data.lane_pos_number == no) {
-               if (data.direction == 1) { // left
+                if (data.direction == 1) { // left
                     drawRectangle(
                         start_point, 
                         axis_left_lane0 - no - (no - 1) * height_lane - 10,
@@ -382,6 +392,7 @@
                         data,
                         type
                     );
+
                 } else if (data.direction == 2) { //right
                     drawRectangle(
                         start_point, 
@@ -393,6 +404,7 @@
                         data,
                         type
                     );
+
                 } else if (data.direction == 3 && data.lane_pos_number == 0){ // singer
                     drawRectangle(
                         start_point,
@@ -425,10 +437,34 @@
 
     function drawAxisX(lane_post, lane_no) {
         var locale = "<?php echo App::isLocale('en') ? 'en' : 'vn';  ?>";
-        lineX(5, width_zoom_zone, space_left - lane_post * width_lane, 'white', 5, 2 );
-        text(direction_text[locale][0]+' '+lane_post, 20, space_left - lane_post * width_lane + 10, 'white');// left
-        lineX(5, width_zoom_zone, space_right + lane_post * width_lane, 'white', 5, 2);
-        text(direction_text[locale][1]+' '+lane_post, 20, space_right + lane_post * width_lane - 20,'white');// right
+        lineX(
+            5, 
+            width_zoom_zone, 
+            space_left - lane_post * width_lane, 
+            'white', 
+            5, 
+            2 
+        );
+        text(  // left
+            direction_text[locale][0] + '' + lane_post, 
+            20, 
+            space_left - lane_post * width_lane + 10, 
+            'white'
+        );
+        lineX(
+            5, 
+            width_zoom_zone, 
+            space_right + lane_post * width_lane, 
+            'white', 
+            5, 
+            2
+        );
+        text(  // right
+            direction_text[locale][1]+' '+lane_post, 
+            20, 
+            space_right + lane_post * width_lane - 20,
+            'white'
+        );
     }
 
     /** 
@@ -436,15 +472,29 @@
     */ 
     
     function drawAxisY(width_axis_y) {
-        lineY(60, space_right - width_axis_y/2, space_left + width_axis_y/2, 'white', 5, 2);// start
-        lineY(width_zoom_zone - 35, space_right - width_axis_y/2, space_left + width_axis_y/2, 'white', 5, 2);// end
+        lineY(  // start
+            60, 
+            space_right - width_axis_y / 2,
+            space_left + width_axis_y / 2,
+            'white', 
+            5, 
+            2
+        );
+        lineY(  // end
+            width_zoom_zone - 35, 
+            space_right - width_axis_y / 2, 
+            space_left + width_axis_y / 2, 
+            'white', 
+            5, 
+            2
+        );
     }
 
     function text(position, x, y, color) {
         var label = new createjs.Text(position, 'solid 5px Arial', color);
-        stage_zoom.addChild(label);
         label.x = x;
         label.y = y;
+        stage_zoom.addChild(label);
     }
 
     function drawRectangle(x, y, w, h, color, flash, data , type) {
@@ -455,6 +505,7 @@
 					.drawRect(x, y, w, h);
 		rect.y = mid_height;
         if (flash) {
+                console.log("draw ractangle from zoome zone"+ x + y + w +h +color);
             stage_zoom.addChild(rect);
             rect.addEventListener('click', function (e) {
                 if (e.nativeEvent.button == 2) {
@@ -473,11 +524,8 @@
             })
             rect.addEventListener('mouseover', function(e) {
                 stage_zoom.cursor = "pointer";
-                if (e.stageX > 800) {
-                    var x_left = e.stageX-150;
-                }else {
-                    var x_left = e.stageX;
-                }
+                var x_left = (e.stageX > 800) ? e.stageX - 150 : e.stageX ; 
+
                 $('.popup_info').show().css({'margin-left': x_left, 'margin-top': y + 80 });
                 $('#detail').text('Km ' + getInfoZoom(data.from, false).km +'+'+ getInfoZoom(data.from, false).m +' - '+'Km ' +getInfoZoom(data.to, false).km +'+'+ getInfoZoom(data.to, false).m);
             })
@@ -510,7 +558,10 @@
             r_mc.addEventListener('mouseover', function(e) {
                 stage_zoom.cursor = "pointer";
                 $('.popup_info').show().css({'margin-left': e.stageX, 'margin-top': y+20});
-                $('#detail').text('Km ' + getInfoZoom(data.station, false).km +'+'+ getInfoZoom(data.station, false).m);
+                $('#detail').text(
+                        'Km ' + getInfoZoom(data.station, false).km 
+                        +'+'+ getInfoZoom(data.station, false).m
+                    );
             })
             r_mc.addEventListener('mouseout', function() {
                 $('.popup_info').hide();
@@ -592,12 +643,17 @@
     // -------------- start zoom zone -----------
 
     function reloadDataZoomZone() {
-        $('.from_zoom').text('Km'+getInfoZoom(limit_left_header, true).km+'+'+getInfoZoom(limit_left_header, true).m +' - '+ 'Km'+getInfoZoom(limit_right_header, true).km+'+'+getInfoZoom(limit_right_header, true).m);
-        // lane_pos_number = 0;
-        // direction = 3;
+        $('.from_zoom').text(
+            'Km'+getInfoZoom(limit_left_header, true).km+'+'+
+            getInfoZoom(limit_left_header, true).m +' - '+ 
+            'Km'+getInfoZoom(limit_right_header, true).km+'+'+
+            getInfoZoom(limit_right_header, true).m
+        );
         if(limit_left_px != 0 || limit_right_px != 100) {
+
             getDataZoomZone(convertPixelToMeter(limit_left_px), convertPixelToMeter(limit_right_px)); 
         } else {
+            console.log("check convertPixelToMeter", convertPixelToMeter(100));
             limit_left = boundary_left;
             limit_right = convertPixelToMeter(limit_right_px);
             getDataZoomZone(limit_left, limit_right);    
@@ -610,8 +666,8 @@
     }
 
     function drawInfoZoom(position, x, y, color, $stage) {
-        var label_info = new createjs.Text(position, '15px solid Arial', color);
         $stage.removeChild(label_info);
+        var label_info = new createjs.Text(position, '15px solid Arial', color);
         label_info.x = x;
         label_info.y = y;
         $stage.addChild(label_info);
@@ -627,6 +683,7 @@
     }
 
     function convertPixelToMeter(px) {
+        console.log("boundary_right:" + boundary_right + "boundary_left:" + boundary_left + "width_zoom_zone:" + width_zoom_zone);
         var m =  ((px*(boundary_right - boundary_left)) / width_zoom_zone) + boundary_left;
         return Math.round(m);
     }
@@ -637,38 +694,41 @@
     }
 
     function convertMeterToPixelZoom(m) {
-        var value = ((width_zoom_zone - 100) * (m-limit_left_change)) / (limit_right_change - limit_left_change);
+        var value = ((width_zoom_zone - 100) * (m - limit_left_change)) / (limit_right_change - limit_left_change);
+        console.log("width_zoom_zone", width_zoom_zone);
         return +Math.round(value);
     }
 
     function addCheckbox(lane_no) {
-        var container = $('#checkbox');
-            container.css('margin-left' , width_zoom_zone - 26 + "px")
-            container.empty();
         var html = '';
-        if (lane_no/2 < lane_pos_number) {
+        var container = $('#checkbox');
+        container.css('margin-left' , width_zoom_zone - 26 + "px")
+        container.empty();
+        
+        if (lane_no / 2 < lane_pos_number) {
             lane_pos_number = 0;
             direction = 3;
         }
-        var padding_top_default = space_left + 10; // lane 0;
-        html +=  checkbox(0, 3, padding_top_default); // lane 0 defalult
-        for (var c = 1; c <= lane_no/2; c++) {
-            var top_left = padding_top_default - c*width_lane;
-            var top_right = padding_top_default + c*width_lane;
+        var paddingTopDefault = space_left + 10; // lane 0;
+        html += checkbox(0, 3, paddingTopDefault); // lane 0 defalult
+        for (var c = 1; c <= lane_no / 2; c ++) {
+            var top_left  = paddingTopDefault - c * width_lane;
+            var top_right = paddingTopDefault + c * width_lane;
             html += checkbox(c, 1, top_left);;
             html += checkbox(c, 2, top_right);
         }
         container.html(html);
+
         $("input[name='checkbox']").on('change', function() {
             $(this).prop('checked', true);
             $("input[name='checkbox']").not(this).prop('checked', false);  
         });
+        
         $("input[name='checkbox']").click(function() {
             if ($(this).is(':checked')) {
                 removeElementHistory();
-                direction = $(this).data('direction');    
-                lane_pos_number = $(this).data('lane_pos_number');
-                flash_checkbox = lane_pos_number;
+                direction       = $(this).data('direction');    
+                lane_pos_number = $(this).data('lanePosNumber');
                 getDataHistory(segement_id, lane_pos_number, direction);
             }
         });
@@ -676,7 +736,7 @@
 
     function checkbox(lane_pos, direct, padding_top) {
         var html = '';
-        html += "<label class='checkbox'><input type='checkbox' data-direction="+ direct +" data-lane_pos_number="+ lane_pos +" name='checkbox' "; 
+        html += "<label class='checkbox'><input type='checkbox' data-direction="+ direct +" data-lanePosNumber="+ lane_pos +"name='checkbox'"; 
         if (lane_pos == lane_pos_number && direct == direction) {
             html += "checked />";
         } else {
@@ -688,4 +748,5 @@
 //------end zoom zone -----------
 
 </script>
+
 @include('front-end.m13.inputting_system.script.history_type')
